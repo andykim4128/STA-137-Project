@@ -5,4 +5,53 @@ date: "2026-02-25"
 output: pdf_document
 ---
 
+```{r}
+# Step 1: reading datasets
+library(tidyverse)
+library(lubridate)
+
+# Dataset 1: cleaned_weather.csv (10-minute data)
+data1 = read_csv("cleaned_weather.csv")
+data1$time = ymd_hms(data1$date)         # Parse time from 'date' column
+data1$T = as.numeric(data1$T)            # Ensure temperature is numeric
+data1 = data1 %>% select(time, T) %>% filter(!is.na(time), !is.na(T))
+
+# Dataset 2: Weather_Data_1980_2024(hourly).csv (hourly data)
+data2 = read_csv("Weather_Data_1980_2024(hourly).csv")
+data2$time = ymd_hms(data2$time)         # Parse time
+data2$temp = as.numeric(data2$temperature)
+data2 = data2 %>% select(time, temp) %>% filter(!is.na(time), !is.na(temp))
+```
+
+```{r}
+# Step 2: Aggregate to daily averages (primary seasonality now comes from annual instead of diurnal pattern)
+
+daily1 = data1 %>%
+  mutate(day = floor_date(time, "day")) %>%
+  group_by(day) %>%
+  summarise(T_avg = mean(T, na.rm = TRUE), .groups = "drop")
+
+daily2 = data2 %>%
+  mutate(day = floor_date(time, "day")) %>%
+  group_by(day) %>%
+  summarise(T_avg = mean(temp, na.rm = TRUE), .groups = "drop")
+
+```
+
+
+```{r}
+# Step 3: Plot both on the same scale 
+
+par(mfrow = c(2, 1), mar = c(3, 4, 2, 1))
+plot(daily1$day, daily1$T_avg, type = "l", col = "blue", xlab = "", ylab = "Temp (°C)",
+     main = "cleaned_weather.csv (10-min → daily avg)")
+grid()
+
+plot(daily2$day, daily2$T_avg, type = "l", col = "darkgreen", xlab = "", ylab = "Temp (°C)",
+     main = "Weather_Data_1980_2024(hourly).csv (hourly → daily avg)")
+grid()
+
+par(mfrow = c(1, 1))
+
+```
 
