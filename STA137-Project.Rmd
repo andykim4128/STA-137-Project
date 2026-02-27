@@ -64,6 +64,21 @@ library(lubridate)
 ```
 
 ```{r}
+data = read_csv("cleaned_weather.csv")
+data$time = ymd_hms(data$date)      
+data$T = as.numeric(data$T)            
+data = data %>% select(time, T) %>% filter(!is.na(time), !is.na(T))
+
+#144 ten minute intervals in one day
+weather_ts = ts(data$T, start = 1, frequency = 144)
+
+#MIGHT CHANGE THIS
+plot.ts(weather_ts, 
+        main = "Time Series Plot of Temperature", 
+        ylab = "Temperature (Celsius)", 
+        col = "blue",
+        lwd = 1)
+
 
 ```
 DATA ANALYSIS
