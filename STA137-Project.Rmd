@@ -6,7 +6,7 @@ output: pdf_document
 ---
 
 ```{r}
-# Step 1: reading datasets
+# Reading Dataset
 library(tidyverse)
 library(lubridate)
 
@@ -24,7 +24,7 @@ data2 = data2 %>% select(time, temp) %>% filter(!is.na(time), !is.na(temp))
 ```
 
 ```{r}
-# Step 2: Aggregate to daily averages (primary seasonality now comes from annual instead of diurnal pattern)
+# Aggregating to daily averages (primary seasonality now comes from annual instead of diurnal pattern)
 
 daily1 = data1 %>%
   mutate(day = floor_date(time, "day")) %>%
@@ -42,17 +42,13 @@ daily2 = data2 %>%
 ```{r}
 # Step 3: Plot both on the same scale 
 
-par(mfrow = c(2, 1), mar = c(3, 4, 2, 1))
 plot(daily1$day, daily1$T_avg, type = "l", col = "blue", xlab = "", ylab = "Temp (°C)",
-     main = "cleaned_weather.csv (10-min → daily avg)")
+     main = "cleaned_weather.csv (10-min -> daily avg)")
 grid()
 
 plot(daily2$day, daily2$T_avg, type = "l", col = "darkgreen", xlab = "", ylab = "Temp (°C)",
-     main = "Weather_Data_1980_2024(hourly).csv (hourly → daily avg)")
+     main = "Weather_Data_1980_2024(hourly).csv (hourly -> daily avg)")
 grid()
-
-par(mfrow = c(1, 1))
-
 ```
 
 Actual project stuff (USE DATA1)
