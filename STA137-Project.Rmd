@@ -51,7 +51,7 @@ plot(daily2$day, daily2$T_avg, type = "l", col = "darkgreen", xlab = "", ylab = 
 grid()
 ```
 
-Actual project stuff (USE DATA1)
+Actual project stuff (USE DATA2: HOURLY DATA)
 
 ```{r}
 #libraries needed
@@ -60,26 +60,34 @@ library(lubridate)
 ```
 
 ```{r}
-data = read_csv("cleaned_weather.csv")
-data$time = ymd_hms(data$date)      
-data$T = as.numeric(data$T)            
-data = data %>% select(time, T) %>% filter(!is.na(time), !is.na(T))
 
-#144 ten minute intervals in one day
-weather_ts = ts(data$T, start = 1, frequency = 144)
+#get data
+data = read_csv("Weather_Data_1980_2024(hourly).csv")
+data$time = ymd_hms(data$time)      
+data$temperature = as.numeric(data$temperature)            
+data = data %>% select(time, temperature) %>% filter(!is.na(time), !is.na(temperature))
 
-#MIGHT CHANGE THIS
-plot.ts(weather_ts, 
-        main = "Time Series Plot of Temperature", 
-        ylab = "Temperature (Celsius)", 
-        col = "blue",
-        lwd = 1)
+#aggregate daily averages to get rid of diurnal seasonality (now only yearly seasonality)
+daily = data %>%
+  mutate(day = floor_date(time, "day")) %>%
+  group_by(day) %>%
+  summarise(T_avg = mean(temperature, na.rm = TRUE), .groups = "drop")
+
+#time series plot
+plot.ts(daily$T_avg)
+
+A = matrix(daily$T_avg, ncol = 365, byrow = "TRUE")
+
+#TODO GET RID OF FEB 29 LEAP YEAR
+#HW 2
+
 
 
 ```
 DATA ANALYSIS
 ```{r}
-
+time = seq(2020, 2021, by = 0.25)
+reg()
 ```
 
 ```{r}
