@@ -55,3 +55,23 @@ par(mfrow = c(1, 1))
 
 ```
 
+Actual project stuff (USE DATA1)
+
+```{r}
+#libraries needed
+library(tidyverse)
+library(lubridate)
+```
+
+```{r}
+
+```
+DATA ANALYSIS
+```{r}
+
+```
+
+```{r}
+
+```
+
