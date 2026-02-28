@@ -51,7 +51,7 @@ plot(daily2$day, daily2$T_avg, type = "l", col = "darkgreen", xlab = "", ylab = 
 grid()
 ```
 
-Actual project stuff (USE DATA2: HOURLY DATA)
+START OF PROJECT (USE DATA2: HOURLY DATA)
 
 ```{r}
 #libraries needed
@@ -75,22 +75,22 @@ daily = data %>%
 
 #time series plot
 plot.ts(daily$T_avg)
-
-A = matrix(daily$T_avg, ncol = 365, byrow = "TRUE")
-
-#TODO GET RID OF FEB 29 LEAP YEAR
-#HW 2
-
-
-
 ```
 DATA ANALYSIS
 ```{r}
-time = seq(2020, 2021, by = 0.25)
-reg()
+#Initial data transformation
+
+
+#TODO STABILIZE VARIANCE, CLASSICAL DECOMPOSITION
+#MOVING AVERAGES FILTER: 2 SIDED AND 1 SIDED
+
 ```
 
 ```{r}
+#ANALYZE SMOOTHING COMPONENT
+A = matrix(daily$T_avg, ncol = 365, byrow = "TRUE")
 
+#TODO GET RID OF FEB 29 LEAP YEAR
+#HW 2 QUESTION 6
 ```
 
