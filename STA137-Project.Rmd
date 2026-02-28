@@ -67,11 +67,14 @@ data$time = ymd_hms(data$time)
 data$temperature = as.numeric(data$temperature)            
 data = data %>% select(time, temperature) %>% filter(!is.na(time), !is.na(temperature))
 
+
 #aggregate daily averages to get rid of diurnal seasonality (now only yearly seasonality)
 daily = data %>%
   mutate(day = floor_date(time, "day")) %>%
   group_by(day) %>%
   summarise(T_avg = mean(temperature, na.rm = TRUE), .groups = "drop")
+
+data = ts(data, start = 1, 365)
 
 #time series plot
 plot.ts(daily$T_avg)
