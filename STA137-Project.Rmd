@@ -104,7 +104,7 @@ DATA ANALYSIS
 
 ```{r}
 #ANALYZE SMOOTHING COMPONENT
-# Step 1: Extract number of complete years
+# Extract number of complete years
 n_total = length(daily$T_avg)
 N_years = n_total %/% 365
 n_use = N_years * 365  # Truncate to full years
@@ -112,7 +112,7 @@ n_use = N_years * 365  # Truncate to full years
 # Shorten to full years only
 T_avg_trimmed = daily$T_avg[1:n_use]
 
-# Step 2: Estimate trend using symmetric moving average
+# Estimate trend using symmetric moving average
 # q = d/2 = 365/2 = 182 → use 365-point centered filter (with weights)
 # Following pattern: c(.5, rep(1, 11), .5)/12 → here: c(.5, rep(1, 363), .5)/365
 
@@ -122,11 +122,11 @@ hatm = stats::filter(T_avg_trimmed, filter = weights, sides = 2)
 # Note: hatm has NA for first & last 182 obs
 # Remove incomplete years at both ends when building matrices
 
-# Step 3: Create matrices A (original) and M (trend), one row per year
+# Create matrices A (original) and M (trend), one row per year
 A = matrix(T_avg_trimmed, ncol = 365, byrow = TRUE)         # N_years x 365
 M = matrix(as.vector(hatm), ncol = 365, byrow = TRUE)       # same dimensions
 
-# Step 4: Compute average seasonal factor mu_k for day k
+# Computes average seasonal factor mu_k for day k
 mu = numeric(365)
 
 # For days 1 to 182: exclude year 1 (index 1), use years 2 to N_years
