@@ -70,14 +70,27 @@ data = data %>% select(time, temperature) %>% filter(!is.na(time), !is.na(temper
 
 #aggregate daily averages to get rid of diurnal seasonality (now only yearly seasonality)
 daily = data %>%
-  mutate(day = floor_date(time, "day")) %>%
+  mutate(
+    day = floor_date(time, "day"),
+    year = year(day),
+    month = month(day),
+    day_of_month = day(day)
+  ) %>%
+  filter(!(month == 2 & day_of_month == 29)) %>%
   group_by(day) %>%
   summarise(T_avg = mean(temperature, na.rm = TRUE), .groups = "drop")
 
-data = ts(data, start = 1, 365)
+n = nrow(daily)
+start_year = year(min(daily$day))
+# Convert day to fractional year (ignoring leap days → all years = 365 days)
+frac_year = start_year + 
+  (yday(daily$day) - 1) / 365.0   # key: use 365, not 365.25
 
-#time series plot
-plot.ts(daily$T_avg)
+# Create ts object (frequency = 365 for daily data)
+y_daily = ts(daily$T_avg, start = frac_year, frequency = 365)
+
+# 4. Plot (exactly like jj example)
+plot.ts(y_daily, main = "Daily Avg Temperature", ylab = "Temp (°C)")
 ```
 DATA ANALYSIS
 ```{r}
@@ -91,9 +104,52 @@ DATA ANALYSIS
 
 ```{r}
 #ANALYZE SMOOTHING COMPONENT
-A = matrix(daily$T_avg, ncol = 365, byrow = "TRUE")
+# Step 1: Extract number of complete years
+n_total = length(daily$T_avg)
+N_years = n_total %/% 365
+n_use = N_years * 365  # Truncate to full years
 
-#TODO GET RID OF FEB 29 LEAP YEAR
+# Shorten to full years only
+T_avg_trimmed = daily$T_avg[1:n_use]
+
+# Step 2: Estimate trend using symmetric moving average
+# q = d/2 = 365/2 = 182 → use 365-point centered filter (with weights)
+# Following pattern: c(.5, rep(1, 11), .5)/12 → here: c(.5, rep(1, 363), .5)/365
+
+weights = c(0.5, rep(1, 363), 0.5) / 365
+hatm = stats::filter(T_avg_trimmed, filter = weights, sides = 2)
+
+# Note: hatm has NA for first & last 182 obs
+# Remove incomplete years at both ends when building matrices
+
+# Step 3: Create matrices A (original) and M (trend), one row per year
+A = matrix(T_avg_trimmed, ncol = 365, byrow = TRUE)         # N_years x 365
+M = matrix(as.vector(hatm), ncol = 365, byrow = TRUE)       # same dimensions
+
+# Step 4: Compute average seasonal factor mu_k for day k
+mu = numeric(365)
+
+# For days 1 to 182: exclude year 1 (index 1), use years 2 to N_years
+for (k in 1:182) {
+  mu[k] = sum(A[2:N_years, k] - M[2:N_years, k]) / (N_years - 1)
+}
+
+# For days 183 to 365: exclude last year (year N_years), use years 1 to N_years-1
+for (k in 183:365) {
+  mu[k] = sum(A[1:(N_years-1), k] - M[1:(N_years-1), k]) / (N_years - 1)
+}
+
+# Step 5: Center seasonal component (mean zero)
+hats = rep(mu - mean(mu), N_years)  # Repeat over N_years
+
+# Now hats is length N_years*365 — matches T_avg_trimmed
+
+# Plot seasonality?
+plot(1:365, mu - mean(mu), type = "l", 
+     xlab = "Day of Year", ylab = "Estimated Seasonal Effect (°C)",
+     main = "Daily Seasonal Pattern in Temperature")
+grid()
+
 #HW 2 QUESTION 6
 ```
 
